@@ -14,7 +14,7 @@ body{margin:0; font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial; backg
 .center{display:grid;place-items:center}
 .footer{text-align:center;opacity:.7;font-size:13px;margin-top:22px}
 textarea{width:100%;resize:vertical;border-radius:12px;padding:12px;background:#0b1220;color:#e5e7eb;border:1px solid rgba(255,255,255,.12)}
-.wheel-wrap{position:relative;width:100%;aspect-ratio:1;max-width:520px;margin-inline:auto}
+.wheel-wrap{position:relative;width:100%;aspect-ratio:1;max-width:720px;margin-inline:auto}
 .pointer{position:absolute;top:-8px;left:50%;transform:translateX(-50%);z-index:3}
 .pointer svg{width:36px;height:36px}
 .wheel-shell{position:absolute;inset:0;border-radius:50%;padding:16px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08)}

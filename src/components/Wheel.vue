@@ -139,18 +139,38 @@ function spin() {
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
+  overflow: visible;
 }
 .bg-img {
   position: absolute; inset: 0; width: 100%; height: 100%;
   object-fit: cover; z-index: 0;
 }
-.left-hero, .right-hero {
-  position: absolute; bottom: -120px; height: 90vh;
+/* .left-hero {
+  position: absolute; bottom: 0px; height: 75vh;
   object-fit: contain; z-index: 1; pointer-events: none;
 }
-.left-hero { left: 90px; } .right-hero { right: 90px; }
+.right-hero {
+  position: absolute; bottom: 0px; height: 60vh;
+  object-fit: contain; z-index: 1; pointer-events: none;
+}
+.left-hero { left: 0px; } .right-hero { right: 0px; } */
+.left-hero, .right-hero {
+  position: absolute;
+  bottom: 0;               /* привязка к низу */
+  height: 40vw;            /* масштаб от ширины экрана */
+  max-height: 80vh;        /* ограничение по высоте */
+  object-fit: contain;
+  z-index: 1;
+  pointer-events: none;
+}
 
+.left-hero {
+  left: 2vw;               /* отступ в процентах */
+}
+
+.right-hero {
+  right: 2vw;
+}
 .wheel-wrap {
   position: relative;
   width: min(85vw, 85vh); /* 📱 адаптивный размер */
@@ -184,7 +204,7 @@ function spin() {
 /* --- 📺 Desktop (по умолчанию) --- */
 
 /* --- 📱 Tablet (768px - 1199px) --- */
-@media (max-width: 1199px) {
+/* @media (max-width: 1199px) {
   .left-hero {
     height: 70vh;
     left: 40px;
@@ -205,14 +225,14 @@ function spin() {
   .jackpot-value {
     font-size: 18px;
   }
-}
+} */
 
 /* --- 📱 Mobile (до 768px) --- */
-@media (max-width: 768px) {
-  .left-hero {
+/* @media (max-width: 768px) { */
+  /* .left-hero {
     display: none;
-  }
-  .right-hero {
+  } */
+  /* .right-hero {
     height: 55vh;
     right: 10px;
     bottom: -60px;
@@ -230,24 +250,60 @@ function spin() {
   .jackpot-value {
     font-size: 16px;
   }
-}
+} */
 
 /* --- 📱 Extra-small (до 480px) --- */
-@media (max-width: 480px) {
-  .right-hero {
-    height: 45vh;
-    right: 5px;
-    bottom: -40px;
+/* @media (max-width: 480px) {
+  .left-hero, .right-hero {
+  position: absolute;
+  bottom: 0;               /* привязка к низу */
+  /* height: 40vw;            /* масштаб от ширины экрана */
+  /* max-height: 80vh;        ограничение по высоте */
+  /* object-fit: contain; */
+  /* z-index: 1; */
+  /* pointer-events: none; */
+/* } */ 
+
+/* .left-hero {
+  left: 2vw;               /* отступ в процентах */
+/* }
+
+.right-hero {
+  right: 2vw;
+} */ 
+  /* .wheel-wrap {
     margin-top: -9vh;
-  }
-  .wheel-wrap {
-    margin-top: -9vh;
+    width: min(100vw, 100vh);
+    right: 1.7vh;
   }
   .jackpot-box {
     padding: 4px 10px;
   }
   .jackpot-value {
     font-size: 14px;
+  } */
+/* } */
+
+@media (max-width: 1024px) {
+  .left-hero, .right-hero {
+    height: 35vw;
+  }
+}
+
+@media (max-width: 768px) {
+  .left-hero {
+    height: 30vw;
+    left: 1vw;
+  }
+  .right-hero {
+    height: 32vw;
+    right: 1vw;
+  }
+}
+
+@media (max-width: 480px) {
+  .left-hero, .right-hero {
+    height: 28vw;   /* ещё меньше */
   }
 }
 </style>
