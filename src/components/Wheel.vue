@@ -1,11 +1,11 @@
 <script setup>
 import { ref, computed } from "vue"
-import bgImg from "../assets/img/fon.jpg"
-import drumImg from "../assets/img/drum.webp"
-import btnImg from "../assets/img/button-img-main.webp"
+import bgImg from "../assets/img/BG.jpg"
+import drumImg from "../assets/img/Roulette.png"
+import btnImg from "../assets/img/button-img-main_1.png"
 import btnImgActive from "../assets/img/button-img-active.webp"
-import foxLeft from "../assets/img/lis.png"
-import raccoonRight from "../assets/img/raccoon.png"
+import foxLeft from "../assets/img/Fox.png"
+import raccoonRight from "../assets/img/Racoon.png"
 
 // Каждый сектор — массив строк [{ text, size }]
 const sectors = [
@@ -46,7 +46,11 @@ function spin() {
     <img :src="bgImg" class="bg-img" alt="Background" />
     <img :src="foxLeft" class="left-hero" alt="Hero Left" />
     <img :src="raccoonRight" class="right-hero" alt="Hero Right" />
-
+   <!-- 💰 Блок JACKPOT -->
+    <div class="jackpot-box">
+      <div class="jackpot-title">JACKPOT</div>
+      <div class="jackpot-value">18 158 518 €</div>
+    </div>
     <div class="wheel-wrap">
       <div class="pointer">
         <svg viewBox="0 0 24 24" fill="currentColor">
@@ -103,10 +107,35 @@ function spin() {
 </template>
 
 <style scoped>
+.jackpot-box {
+  position: absolute;
+  top: 0vh;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #000;
+  border: 3px solid #FFD700;
+  border-radius: 12px;
+  padding: 8px 20px;
+  text-align: center;
+  color: #fff;
+  font-family: sans-serif;
+  z-index: 5;
+  box-shadow: 0 0 15px rgba(255,215,0,.7);
+}
+.jackpot-title {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+.jackpot-value {
+  font-size: 20px;
+  font-weight: 900;
+  color: #FFD700;
+}
 .app-bg {
   position: relative;
   width: 100%;
-  height: 100vh;
+  height: 105vh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -122,7 +151,13 @@ function spin() {
 }
 .left-hero { left: 90px; } .right-hero { right: 90px; }
 
-.wheel-wrap { position: relative; width: 100%; aspect-ratio: 1; max-width: 570px; margin-inline: auto; }
+.wheel-wrap {
+  position: relative;
+  width: min(85vw, 85vh); /* 📱 адаптивный размер */
+  aspect-ratio: 1;        /* всегда квадрат */
+  margin-inline: auto;
+  margin-top: 5vh;        /* можно регулировать отступ сверху */
+}
 .wheel { position: relative; width: 100%; height: 100%; border-radius: 50%;
   transition: transform cubic-bezier(.2,.8,.15,1) 5s; }
 .wheel-img { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 50%; }
@@ -145,4 +180,74 @@ function spin() {
 }
 .pointer { position: absolute; top: -8px; left: 50%; transform: translateX(-50%); z-index: 4; }
 .pointer svg { width: 36px; height: 36px; }
+
+/* --- 📺 Desktop (по умолчанию) --- */
+
+/* --- 📱 Tablet (768px - 1199px) --- */
+@media (max-width: 1199px) {
+  .left-hero {
+    height: 70vh;
+    left: 40px;
+    bottom: -100px;
+  }
+  .right-hero {
+    height: 70vh;
+    right: 40px;
+    bottom: -100px;
+  }
+  .wheel-wrap {
+    margin-top: 9vh;
+  }
+  .jackpot-box {
+    font-size: 0.9rem;
+    padding: 6px 16px;
+  }
+  .jackpot-value {
+    font-size: 18px;
+  }
+}
+
+/* --- 📱 Mobile (до 768px) --- */
+@media (max-width: 768px) {
+  .left-hero {
+    display: none;
+  }
+  .right-hero {
+    height: 55vh;
+    right: 10px;
+    bottom: -60px;
+  }
+  .wheel-wrap {
+    margin-top: 6vh;
+  }
+  .jackpot-box {
+    top: 2vh;
+    padding: 5px 14px;
+  }
+  .jackpot-title {
+    font-size: 12px;
+  }
+  .jackpot-value {
+    font-size: 16px;
+  }
+}
+
+/* --- 📱 Extra-small (до 480px) --- */
+@media (max-width: 480px) {
+  .right-hero {
+    height: 45vh;
+    right: 5px;
+    bottom: -40px;
+    margin-top: -9vh;
+  }
+  .wheel-wrap {
+    margin-top: -9vh;
+  }
+  .jackpot-box {
+    padding: 4px 10px;
+  }
+  .jackpot-value {
+    font-size: 14px;
+  }
+}
 </style>
