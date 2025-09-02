@@ -6,19 +6,22 @@ import btnImg from "../assets/img/button-img-main_1.png"
 import btnImgActive from "../assets/img/button-img-active.webp"
 import foxLeft from "../assets/img/Fox.png"
 import raccoonRight from "../assets/img/Racoon.png"
+import coins1 from "../assets/img/Coins1.png"
+import coins2 from "../assets/img/Coins2.png"
+import logo from "../assets/img/Logo.svg"
 
 // Каждый сектор — массив строк [{ text, size }]
 const sectors = [
-  [ { text: "100%", size: 6, color: "#000", dy: 0 },   { text: "на депозит", size: 2.2, color: "#000", dy: 2 } ],
-  [ { text: "50", size: 6, color: "#fff", dy: 0 },     { text: "FS", size: 3, color: "#fff", dy: 1.5 } ],
-  [ { text: "MAXBIT", size: 4.2, color: "#000", dy: 0 },    { text: "jackpot", size: 2.6, color: "#000", dy: 1.5 } ],
-  [ { text: "попробуй", size: 2.0, color: "#fff", dy: 0 }, { text: "еще раз", size: 2.2, color: "#fff", dy: 1.5 } ],
-  [ { text: "250", size: 6, color: "#000", dy: 0 },    { text: "FS", size: 4, color: "#000", dy: 1.2 } ],
-  [ { text: "150%", size: 5, color: "#fff", dy: 0 },   { text: "на депозит", size: 2.2, color: "#fff", dy: 2 } ],
-  [ { text: "500", size: 6, color: "#000", dy: 0 },    { text: "FS", size: 4, color: "#000", dy: 1.2 } ],
-  [ { text: "MAXBIT", size: 4.2, color: "#fff", dy: 0 },    { text: "jackpot", size: 2.6, color: "#fff", dy: 1.5 } ],
-  [ { text: "попробуй", size: 2.0, color: "#000", dy: 0 }, { text: "еще раз", size: 2.2, color: "#000", dy: 1.5 } ],
-  [ { text: "100", size: 6, color: "#fff", dy: 0 },    { text: "FS", size: 4, color: "#fff", dy: 1.2 } ],
+  [ { text: "100%", size: 6, color: "#000", dy: -0.5 },   { text: "на депозит", size: 2.2, color: "#000", dy: 2 } ],
+  [ { text: "250", size: 6, color: "#fff", dy: -0.5 },    { text: "FS", size: 3, color: "#fff", dy: 1.5 } ],
+  [ { text: "100%", size: 6, color: "#000", dy: -0.5 },   { text: "на депозит", size: 2.2, color: "#000", dy: 2 } ],
+  [ { text: "MAX", size: 6, color: "#fff", dy: -0.5 },    { text: "jackpot", size: 2.6, color: "#fff", dy: 1.5 } ],
+  [ { text: "попробуй", size: 2.0, color: "#000", dy: -0.5 }, { text: "еще раз", size: 2.2, color: "#000", dy: 1.5 } ],
+  [ { text: "100%", size: 6, color: "#fff", dy: -0.5 },   { text: "на депозит", size: 2.2, color: "#fff", dy: 2 } ],
+  [ { text: "250", size: 6, color: "#000", dy: -0.5 },    { text: "FS", size: 3, color: "#000", dy: 1.5 } ],
+  [ { text: "100%", size: 5, color: "#fff", dy: -0.5 },   { text: "на депозит", size: 2.2, color: "#fff", dy: 2 } ],
+  [ { text: "MAX", size: 6, color: "#000", dy: -0.5 },    { text: "jackpot", size: 2.6, color: "#000", dy: 1.5 } ],
+  [ { text: "500", size: 6, color: "#fff", dy: -0.5 },    { text: "FS", size: 4, color: "#fff", dy: 1.2 } ],
 ]
 
 const rotation = ref(0)
@@ -26,19 +29,54 @@ const spinning = ref(false)
 const sectorAngle = computed(() => 360 / sectors.length)
 const rText = 33 // радиус для центра надписей (в % viewBox)
 
+// function spin() {
+//   if (spinning.value) return
+//   spinning.value = true
+//   const sectorAngleLocal = 360 / sectors.length
+//   // const randomIndex = Math.floor(Math.random() * sectors.length)
+//   // const targetRotation = 360 * 5 + (360 - randomIndex * sectorAngleLocal - sectorAngleLocal / 2)
+//   const fixedIndex = 5 // ← выбери нужный сектор
+//   const targetRotation = 360 * 5 + (360 - fixedIndex * sectorAngleLocal - sectorAngleLocal / 2) + 20
+//   rotation.value = targetRotation
+//   setTimeout(() => {
+//     spinning.value = false
+//     const label = sectors[fixedIndex].map(l => l.text).join(" ")
+//     alert("Выпало: " + label)
+//   }, 5000)
+// }
+const FIXED_INDEX = 5;     // какой сектор выпадать всегда
+const BASE_TURNS = 5;      // сколько полных оборотов
+const PHASE = 20;          // твоя подстройка, если нужно
+
 function spin() {
   if (spinning.value) return
   spinning.value = true
-  const sectorAngleLocal = 360 / sectors.length
-  const randomIndex = Math.floor(Math.random() * sectors.length)
-  const targetRotation = 360 * 5 + (360 - randomIndex * sectorAngleLocal - sectorAngleLocal / 2)
-  rotation.value = targetRotation
+
+  const n = sectors.length
+  const sectorAngleLocal = 360 / n
+
+  // угол "куда надо" (под верхний указатель; если у тебя указатель внизу — скажу как сместить)
+  const angleForIndex = (idx) =>
+    360 - (idx * sectorAngleLocal + sectorAngleLocal / 2) + PHASE
+
+  // нормализуем текущий угол
+  const norm = ((rotation.value % 360) + 360) % 360
+
+  // сколько ещё нужно докрутить от текущего угла до требуемого
+  const toTarget = ((angleForIndex(FIXED_INDEX) - norm) + 360) % 360
+
+  // добавляем несколько полных оборотов, чтобы была красивая анимация
+  const delta = 360 * BASE_TURNS + toTarget
+
+  rotation.value += delta
+
   setTimeout(() => {
     spinning.value = false
-    const label = sectors[randomIndex].map(l => l.text).join(" ")
+    const label = sectors[FIXED_INDEX].map(l => l.text).join(" ")
     alert("Выпало: " + label)
-  }, 5000)
+  }, 5000) // совпадает с transition: 5s
 }
+
 </script>
 
 <template>
@@ -46,18 +84,15 @@ function spin() {
     <img :src="bgImg" class="bg-img" alt="Background" />
     <img :src="foxLeft" class="left-hero" alt="Hero Left" />
     <img :src="raccoonRight" class="right-hero" alt="Hero Right" />
+    <img :src="coins1" class="right-coins" alt="Coins Right" />
+    <img :src="coins2" class="left-coins" alt="Coins Left" />
+    <img :src="logo" class="left-logo" alt="Logo Left" />
    <!-- 💰 Блок JACKPOT -->
     <div class="jackpot-box">
       <div class="jackpot-title">JACKPOT</div>
       <div class="jackpot-value">18 158 518 €</div>
     </div>
     <div class="wheel-wrap">
-      <div class="pointer">
-        <svg viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 2L22 22H2L12 2z"/>
-        </svg>
-      </div>
-
       <div class="wheel" :style="{ transform: `rotate(${rotation}deg)` }">
         <img :src="drumImg" class="wheel-img" alt="Колесо фортуны" />
 
@@ -156,21 +191,54 @@ function spin() {
 .left-hero { left: 0px; } .right-hero { right: 0px; } */
 .left-hero, .right-hero {
   position: absolute;
-  bottom: 0;               /* привязка к низу */
-  height: 40vw;            /* масштаб от ширины экрана */
   max-height: 80vh;        /* ограничение по высоте */
   object-fit: contain;
   z-index: 1;
   pointer-events: none;
+  bottom: 2.8vw;
+}
+
+.right-coins {
+  position: absolute;
+  top: 0vh;               /* привязка к низу */
+  height: 20vw;            /* масштаб от ширины экрана */
+  max-height: 80vh;        /* ограничение по высоте */
+  object-fit: contain;
+  z-index: 5;
+  pointer-events: none;
+  right: 0vw;
+}
+
+.left-coins {
+  position: absolute;
+  top: 20vh;               /* привязка к низу */
+  height: 20vw;            /* масштаб от ширины экрана */
+  max-height: 80vh;        /* ограничение по высоте */
+  object-fit: contain;
+  pointer-events: none;
+  left: 0vw;
+}
+
+.left-logo {
+  position: absolute;
+  top: 6vh;               /* привязка к низу */
+  height: 2.5vw;            /* масштаб от ширины экрана */
+  max-height: 80vh;        /* ограничение по высоте */
+  object-fit: contain;
+  pointer-events: none;
+  left: 5vw;
 }
 
 .left-hero {
-  left: 2vw;               /* отступ в процентах */
+  height: 38vw; 
+  left: 0vw;               /* отступ в процентах */
 }
 
 .right-hero {
-  right: 2vw;
+  height: 28vw; 
+  right: 0vw;
 }
+
 .wheel-wrap {
   position: relative;
   width: min(85vw, 85vh); /* 📱 адаптивный размер */
@@ -198,8 +266,6 @@ function spin() {
   transform: translate(-37%, -44%);
   width: 25%; height: auto; cursor: pointer; z-index: 3;
 }
-.pointer { position: absolute; top: -8px; left: 50%; transform: translateX(-50%); z-index: 4; }
-.pointer svg { width: 36px; height: 36px; }
 
 /* --- 📺 Desktop (по умолчанию) --- */
 
@@ -283,6 +349,40 @@ function spin() {
     font-size: 14px;
   } */
 /* } */
+@media (max-width: 1920px) {
+  .wheel-wrap {
+    position: relative;
+    width: min(72vw, 72vh); /* 📱 адаптивный размер */
+    aspect-ratio: 1;        /* всегда квадрат */
+    margin-inline: auto;
+    left: -0.6vw;
+    margin-top: -8vh;        /* можно регулировать отступ сверху */
+  }
+  .wheel { position: relative; width: 100%; height: 100%; border-radius: 50%;
+    transition: transform cubic-bezier(.2,.8,.15,1) 5s; }
+  .wheel-img { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 50%; }
+
+  .wheel-overlay { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+
+  .left-hero {
+    height: 38vw;
+    left: 0vw;
+    bottom: 2.8vw;
+  }
+  .right-hero {
+    height: 31vw;
+    right: 0vw;
+  }
+  .right-coins {
+    height: 22vw;
+  }
+  .left-coins {
+    height: 34vw;
+  }
+  .left-logo {
+    height: 2.5vw;
+  }
+}
 
 @media (max-width: 1024px) {
   .left-hero, .right-hero {
