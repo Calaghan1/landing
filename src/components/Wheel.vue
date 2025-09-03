@@ -108,89 +108,115 @@ const formattedJackpot = computed(() =>
       <div class="jackpot__value">{{ formattedJackpot }}</div>
     </div> -->
     
-    <div class="jackpot">
-      <img class="jackpot__frame" :src="jackpotFrame" alt="jackpot frame" />
-
-      <div class="jackpot__value">
-        {{ formattedJackpot }}
-      </div>
-    </div>
-
+<div class="jackpot">
+  <img class="jackpot__frame" :src="jackpotFrame" alt="jackpot frame" />
+  
+  <div class="jackpot__inner">
+    <div class="jackpot__title">Jackpot</div>
+    <div class="jackpot__value">{{ formattedJackpot }}</div>
+  </div>
+</div>
 
 
     <!-- 🛠️ тут была ошибка: не хватало '>' -->
-    <div class="wheel-wrap">
-      <div class="wheel" :style="{ transform: `rotate(${rotation}deg)` }">
-        <img :src="drumImg" class="wheel-img" alt="Колесо фортуны" />
+<div class="wheel-wrap">
+  <div class="wheel" :style="{ transform: `rotate(${rotation}deg)` }">
+    <img :src="drumImg" class="wheel-img" alt="Колесо фортуны" />
 
-        <!-- SVG-оверлей -->
-        <svg class="wheel-overlay" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
-          <g transform="translate(50,50)">
-            <g v-for="(sector, i) in sectors" :key="i" :transform="`rotate(${i * sectorAngle})`">
-              <text
-                :x="0"
-                :y="-(rText)"
-                text-anchor="middle"
-                dominant-baseline="middle"
-                class="wheel-label"
-              >
-                <tspan
-                  v-for="(line, j) in sector"
-                  :key="j"
-                  x="0"
-                  :dy="line.dy + 'em'"
-                  :style="{
-                    fontSize: line.size + 'px',
-                    fill: line.color,
-                    // SVG лучше без 'px' для stroke-width:
-                    strokeWidth: (line.size * 0.16).toFixed(2)
-                  }"
-                >
-                  {{ line.text }}
-                </tspan>
-              </text>
-            </g>
-          </g>
-        </svg>
+    <!-- SVG-оверлей -->
+    <svg class="wheel-overlay" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
+      <g transform="translate(50,50)">
+        <g v-for="(sector, i) in sectors" :key="i" :transform="`rotate(${i * sectorAngle})`">
+          <text
+            :x="0"
+            :y="-(rText)"
+            text-anchor="middle"
+            dominant-baseline="middle"
+            class="wheel-label"
+          >
+            <tspan
+              v-for="(line, j) in sector"
+              :key="j"
+              x="0"
+              :dy="line.dy + 'em'"
+              :style="{
+                fontSize: line.size + 'px',
+                fill: line.color,
+                strokeWidth: (line.size * 0.16).toFixed(2)
+              }"
+            >
+              {{ line.text }}
+            </tspan>
+          </text>
+        </g>
+      </g>
+    </svg>
+  </div>
 
-        <!-- 🎯 Кнопка спина по центру -->
-        <img
-          :src="spinning ? btnImgActive : btnImg"
-          class="spin-btn"
-          alt="Spin"
-          @click="spin"
-        />
-      </div>
-    </div>
+  <!-- 🎯 Кнопка теперь снаружи .wheel -->
+  <img
+    :src="spinning ? btnImgActive : btnImg"
+    class="spin-btn"
+    alt="Spin"
+    @click="spin"
+  />
+</div>
   </div>
 </template>
 
 <style scoped>
-.jackpot{
-  position:absolute;
-  margin: 0 auto;
-  top: -20vh;
-  /* left:50%; */
-  height: 10vw;
-  width: 10vw;
-  left: 35vw;
-  aspect-ratio: 4 / 1;      /* рамка 1:4 (высота:ширина = 1:4) */
-  background: center/contain no-repeat;
-  display:grid;
-  /* place-items:center; */
-  z-index: 6;                /* поверх героев/фона */
-  pointer-events:none;       /* рамка не кликабельна */
+
+.jackpot {
+  position: absolute;
+  top: -16vh;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200vh; /* ширина рамки */
+  aspect-ratio: 4 / 1;     /* пропорции рамки */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 6;
+  pointer-events: none;
+  font-size: 50%;   /* базовый масштаб */
 }
-.jackpot__value{
-  position:absolute;
-  bottom: 18%;
+
+.jackpot__frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.jackpot__inner {
+  position: relative;
+  display: flex;
+  flex-direction: column;  /* сверху вниз */
+  align-items: center;
+  justify-content: center;
+  line-height: 1.1;
+}
+
+.jackpot__title {
+  font-size: 2.2em;        /* чуть меньше цифр */
+  font-weight: 700;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-shadow: 0 2px 4px rgba(0,0,0,.6);
+  margin-bottom: 0.2em;    /* расстояние до цифр */
+}
+
+.jackpot__value {
   font-weight: 900;
-  font-size: clamp(20px, 4.6vw, 54px);
-  color:#facc15;             /* жёлтые цифры как в макете */
+  font-size: 4em;          /* крупнее заголовка */
+  color: #facc15;
   text-shadow: 0 2px 4px rgba(0,0,0,.55);
-  pointer-events:auto;       /* если понадобится hover/click */
-  user-select:none;
+  user-select: none;
+  white-space: nowrap;
 }
+
 .app-bg {
   position: relative;
   width: 100%;
@@ -286,9 +312,14 @@ const formattedJackpot = computed(() =>
 }
 
 .spin-btn {
-  position: absolute; top: 50%; left: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
   transform: translate(-50%, -44%);
-  width: 25%; height: auto; cursor: pointer; z-index: 3;
+  width: 25%;
+  height: auto;
+  cursor: pointer;
+  z-index: 3;
 }
 
 /* --- 📺 Desktop (по умолчанию) --- */
