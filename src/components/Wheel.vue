@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from "vue"
+import { ref, computed, onMounted, onUnmounted } from "vue"
 import bgImg from "../assets/img/BG.jpg"
 import drumImg from "../assets/img/Roulette.png"
 import btnImg from "../assets/img/button-img-main_1.png"
@@ -9,6 +9,7 @@ import raccoonRight from "../assets/img/Racoon.png"
 import coins1 from "../assets/img/Coins1.png"
 import coins2 from "../assets/img/Coins2.png"
 import logo from "../assets/img/Logo.svg"
+import jackpotFrame from "../assets/img/jackpot.png"
 
 // Каждый сектор — массив строк [{ text, size }]
 const sectors = [
@@ -29,24 +30,9 @@ const spinning = ref(false)
 const sectorAngle = computed(() => 360 / sectors.length)
 const rText = 33 // радиус для центра надписей (в % viewBox)
 
-// function spin() {
-//   if (spinning.value) return
-//   spinning.value = true
-//   const sectorAngleLocal = 360 / sectors.length
-//   // const randomIndex = Math.floor(Math.random() * sectors.length)
-//   // const targetRotation = 360 * 5 + (360 - randomIndex * sectorAngleLocal - sectorAngleLocal / 2)
-//   const fixedIndex = 5 // ← выбери нужный сектор
-//   const targetRotation = 360 * 5 + (360 - fixedIndex * sectorAngleLocal - sectorAngleLocal / 2) + 20
-//   rotation.value = targetRotation
-//   setTimeout(() => {
-//     spinning.value = false
-//     const label = sectors[fixedIndex].map(l => l.text).join(" ")
-//     alert("Выпало: " + label)
-//   }, 5000)
-// }
-const FIXED_INDEX = 5;     // какой сектор выпадать всегда
-const BASE_TURNS = 5;      // сколько полных оборотов
-const PHASE = 20;          // твоя подстройка, если нужно
+const FIXED_INDEX = 5       // какой сектор выпадать всегда
+const BASE_TURNS = 5        // сколько полных оборотов
+const PHASE = 20            // подстройка, если нужно
 
 function spin() {
   if (spinning.value) return
@@ -55,17 +41,11 @@ function spin() {
   const n = sectors.length
   const sectorAngleLocal = 360 / n
 
-  // угол "куда надо" (под верхний указатель; если у тебя указатель внизу — скажу как сместить)
   const angleForIndex = (idx) =>
     360 - (idx * sectorAngleLocal + sectorAngleLocal / 2) + PHASE
 
-  // нормализуем текущий угол
   const norm = ((rotation.value % 360) + 360) % 360
-
-  // сколько ещё нужно докрутить от текущего угла до требуемого
   const toTarget = ((angleForIndex(FIXED_INDEX) - norm) + 360) % 360
-
-  // добавляем несколько полных оборотов, чтобы была красивая анимация
   const delta = 360 * BASE_TURNS + toTarget
 
   rotation.value += delta
@@ -77,6 +57,42 @@ function spin() {
   }, 5000) // совпадает с transition: 5s
 }
 
+// ------ JACKPOT ------
+const jackpot = ref(20560223)
+const target  = ref(jackpot.value)
+const speedPerSec = 250
+
+let raf = 0
+let last = 0
+let intervalId = 0
+
+function tick(ts){
+  if(!last) last = ts
+  const dt = (ts - last)/1000
+  last = ts
+  const diff = target.value - jackpot.value
+  if (Math.abs(diff) > 0.1){
+    const step = Math.sign(diff) * Math.min(Math.abs(diff), dt * speedPerSec)
+    jackpot.value += step
+  }
+  raf = requestAnimationFrame(tick)
+}
+
+onMounted(() => {
+  raf = requestAnimationFrame(tick)
+  intervalId = setInterval(() => {
+    target.value += 50 + Math.floor(Math.random()*250)
+  }, 1000 + Math.random()*2000)
+})
+
+onUnmounted(() => {
+  if (raf) cancelAnimationFrame(raf)
+  if (intervalId) clearInterval(intervalId)
+})
+
+const formattedJackpot = computed(() =>
+  Math.floor(jackpot.value).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' €'
+)
 </script>
 
 <template>
@@ -87,23 +103,30 @@ function spin() {
     <img :src="coins1" class="right-coins" alt="Coins Right" />
     <img :src="coins2" class="left-coins" alt="Coins Left" />
     <img :src="logo" class="left-logo" alt="Logo Left" />
-   <!-- 💰 Блок JACKPOT -->
-    <div class="jackpot-box">
-      <div class="jackpot-title">JACKPOT</div>
-      <div class="jackpot-value">18 158 518 €</div>
+
+    <!-- <div class="jackpot" :style="{ backgroundImage: `url(${jackpotFrame})` }">
+      <div class="jackpot__value">{{ formattedJackpot }}</div>
+    </div> -->
+    
+    <div class="jackpot">
+      <img class="jackpot__frame" :src="jackpotFrame" alt="jackpot frame" />
+
+      <div class="jackpot__value">
+        {{ formattedJackpot }}
+      </div>
     </div>
+
+
+
+    <!-- 🛠️ тут была ошибка: не хватало '>' -->
     <div class="wheel-wrap">
       <div class="wheel" :style="{ transform: `rotate(${rotation}deg)` }">
         <img :src="drumImg" class="wheel-img" alt="Колесо фортуны" />
 
-        <!-- SVG-оверлей с надписями -->
+        <!-- SVG-оверлей -->
         <svg class="wheel-overlay" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
           <g transform="translate(50,50)">
-            <g
-              v-for="(sector, i) in sectors"
-              :key="i"
-              :transform="`rotate(${i * sectorAngle})`"
-            >
+            <g v-for="(sector, i) in sectors" :key="i" :transform="`rotate(${i * sectorAngle})`">
               <text
                 :x="0"
                 :y="-(rText)"
@@ -111,7 +134,6 @@ function spin() {
                 dominant-baseline="middle"
                 class="wheel-label"
               >
-                <!-- Каждая строка — свой размер -->
                 <tspan
                   v-for="(line, j) in sector"
                   :key="j"
@@ -120,7 +142,8 @@ function spin() {
                   :style="{
                     fontSize: line.size + 'px',
                     fill: line.color,
-                    strokeWidth: (line.size * 0.16).toFixed(2) + 'px'
+                    // SVG лучше без 'px' для stroke-width:
+                    strokeWidth: (line.size * 0.16).toFixed(2)
                   }"
                 >
                   {{ line.text }}
@@ -129,43 +152,44 @@ function spin() {
             </g>
           </g>
         </svg>
-      </div>
 
-      <img
-        :src="spinning ? btnImgActive : btnImg"
-        class="spin-btn"
-        alt="Spin"
-        @click="spin"
-      />
+        <!-- 🎯 Кнопка спина по центру -->
+        <img
+          :src="spinning ? btnImgActive : btnImg"
+          class="spin-btn"
+          alt="Spin"
+          @click="spin"
+        />
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-.jackpot-box {
-  position: absolute;
-  top: 0vh;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #000;
-  border: 3px solid #FFD700;
-  border-radius: 12px;
-  padding: 8px 20px;
-  text-align: center;
-  color: #fff;
-  font-family: sans-serif;
-  z-index: 5;
-  box-shadow: 0 0 15px rgba(255,215,0,.7);
+.jackpot{
+  position:absolute;
+  margin: 0 auto;
+  top: -20vh;
+  /* left:50%; */
+  height: 10vw;
+  width: 10vw;
+  left: 35vw;
+  aspect-ratio: 4 / 1;      /* рамка 1:4 (высота:ширина = 1:4) */
+  background: center/contain no-repeat;
+  display:grid;
+  /* place-items:center; */
+  z-index: 6;                /* поверх героев/фона */
+  pointer-events:none;       /* рамка не кликабельна */
 }
-.jackpot-title {
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: 1px;
-}
-.jackpot-value {
-  font-size: 20px;
+.jackpot__value{
+  position:absolute;
+  bottom: 18%;
   font-weight: 900;
-  color: #FFD700;
+  font-size: clamp(20px, 4.6vw, 54px);
+  color:#facc15;             /* жёлтые цифры как в макете */
+  text-shadow: 0 2px 4px rgba(0,0,0,.55);
+  pointer-events:auto;       /* если понадобится hover/click */
+  user-select:none;
 }
 .app-bg {
   position: relative;
@@ -263,7 +287,7 @@ function spin() {
 
 .spin-btn {
   position: absolute; top: 50%; left: 50%;
-  transform: translate(-37%, -44%);
+  transform: translate(-50%, -44%);
   width: 25%; height: auto; cursor: pointer; z-index: 3;
 }
 
@@ -406,4 +430,13 @@ function spin() {
     height: 28vw;   /* ещё меньше */
   }
 }
+
+@media (max-width: 320px) and (orientation: portrait) {
+  /* стили под смартфон вертикально */
+}
+
+@media (max-height: 320px) and (orientation: landscape) {
+  /* стили под смартфон горизонтально */
+}
+
 </style>
